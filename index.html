@@ -2,13 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>贪吃蛇 - Snake Game</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -19,22 +20,24 @@
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
+            touch-action: none;
         }
 
         .game-container {
             text-align: center;
             background: rgba(22, 33, 62, 0.95);
-            padding: 30px;
+            padding: 20px;
             border-radius: 15px;
             box-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
             border: 2px solid #00ff88;
+            max-width: 95vw;
         }
 
         h1 {
             color: #00ff88;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-            font-size: 2.5em;
+            font-size: 1.8em;
         }
 
         #gameCanvas {
@@ -44,40 +47,42 @@
             box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.1);
             display: block;
             margin: 0 auto;
+            max-width: 100%;
+            height: auto;
         }
 
         .game-info {
             display: flex;
             justify-content: space-around;
-            margin-top: 20px;
+            margin-top: 15px;
             color: #fff;
-            font-size: 1.2em;
+            font-size: 1em;
         }
 
         .game-info span {
-            padding: 10px 20px;
+            padding: 8px 15px;
             background: #0f3460;
             border-radius: 8px;
             border: 2px solid #00ff88;
-            min-width: 120px;
+            min-width: 80px;
         }
 
         .game-info strong {
             color: #00ff88;
-            font-size: 1.3em;
+            font-size: 1.2em;
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 15px;
             color: #aaa;
-            font-size: 0.9em;
+            font-size: 0.8em;
         }
 
         .controls kbd {
             background: #333;
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 3px;
-            margin: 0 5px;
+            margin: 0 3px;
             border: 1px solid #555;
             color: #00ff88;
         }
@@ -86,11 +91,11 @@
             background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
             color: #1a1a2e;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
+            padding: 12px 30px;
+            font-size: 1em;
             border-radius: 8px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 15px;
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
@@ -101,30 +106,83 @@
             box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
         }
 
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 手机方向控制按钮 */
+        .mobile-controls {
+            display: none;
+            margin-top: 20px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            color: #00ff88;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 255, 136, 0.2);
+        }
+
+        .control-btn:active {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #1a1a2e;
+            transform: scale(0.9);
+        }
+
+        .control-btn.placeholder {
+            visibility: hidden;
+        }
+
         .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            color: #fff;
-            padding: 50px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .game-over-content {
+            background: #16213e;
+            padding: 40px;
             border-radius: 15px;
             text-align: center;
             border: 3px solid #ff6b6b;
-            display: none;
-            z-index: 100;
+            margin: 20px;
         }
 
         .game-over h2 {
             color: #ff6b6b;
-            font-size: 3em;
+            font-size: 2em;
             margin-bottom: 20px;
         }
 
         .game-over p {
-            font-size: 1.5em;
+            font-size: 1.2em;
             margin-bottom: 10px;
+            color: #fff;
         }
 
         .game-over .btn {
@@ -135,32 +193,108 @@
         .high-score {
             margin-top: 15px;
             color: #ffd93d;
-            font-size: 1.1em;
+            font-size: 1em;
+        }
+
+        /* 桌面端隐藏手机按钮 */
+        @media (min-width: 769px) {
+            .mobile-controls {
+                display: none !important;
+            }
+        }
+
+        /* 手机端显示方向按钮，隐藏键盘提示 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            #gameCanvas {
+                width: 300px !important;
+                height: 300px !important;
+            }
+
+            .controls {
+                display: none;
+            }
+
+            .mobile-controls {
+                display: block;
+            }
+
+            .game-info span {
+                min-width: 60px;
+                padding: 6px 10px;
+                font-size: 0.9em;
+            }
+
+            .btn {
+                padding: 10px 25px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* 超小屏幕 */
+        @media (max-width: 360px) {
+            #gameCanvas {
+                width: 250px !important;
+                height: 250px !important;
+            }
+
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <h1>🐍 贪吃蛇</h1>
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
         <div class="game-info">
             <span>得分: <strong id="score">0</strong></span>
             <span>最高分: <strong id="highScore">0</strong></span>
         </div>
+        
+        <!-- 键盘操作提示（桌面端显示） -->
         <div class="controls">
             <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> 移动 |
             <kbd>空格</kbd> 暂停 |
             <kbd>R</kbd> 重新开始
         </div>
+        
+        <!-- 手机方向按钮 -->
+        <div class="mobile-controls">
+            <div class="control-row">
+                <div class="control-btn placeholder"></div>
+                <div class="control-btn" id="btnUp">↑</div>
+                <div class="control-btn placeholder"></div>
+            </div>
+            <div class="control-row">
+                <div class="control-btn" id="btnLeft">←</div>
+                <div class="control-btn placeholder"></div>
+                <div class="control-btn" id="btnRight">→</div>
+            </div>
+            <div class="control-row">
+                <div class="control-btn placeholder"></div>
+                <div class="control-btn" id="btnDown">↓</div>
+                <div class="control-btn placeholder"></div>
+            </div>
+        </div>
+        
         <button class="btn" id="startBtn">开始游戏</button>
-        <div class="high-score">💡 提示：吃到食物增加长度，撞墙或撞到自己游戏结束</div>
     </div>
 
+    <!-- 游戏结束弹窗 -->
     <div class="game-over" id="gameOver">
-        <h2>游戏结束</h2>
-        <p>最终得分: <strong id="finalScore">0</strong></p>
-        <p class="high-score">🏆 历史最高: <strong id="gameOverHighScore">0</strong></p>
-        <button class="btn" id="restartBtn">再玩一次</button>
+        <div class="game-over-content">
+            <h2>游戏结束</h2>
+            <p>最终得分: <strong id="finalScore">0</strong></p>
+            <p class="high-score">🏆 历史最高: <strong id="gameOverHighScore">0</strong></p>
+            <button class="btn" id="restartBtn">再玩一次</button>
+        </div>
     </div>
 
     <script src="snake.js"></script>
