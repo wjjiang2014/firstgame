@@ -54,6 +54,7 @@ class SnakeGame {
         this.direction = { x: 0, y: -1 };  // 向上
         this.nextDirection = { x: 0, y: -1 };
         this.score = 0;
+        this.speed = 120;
         this.placeFood();
         this.updateUI();
     }
@@ -63,8 +64,74 @@ class SnakeGame {
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
         
         // 按钮事件
-        document.getElementById('startBtn').addEventListener('click', () => this.toggleGame());
-        document.getElementById('restartBtn').addEventListener('click', () => this.restart());
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => this.toggleGame());
+        }
+        
+        const restartBtn = document.getElementById('restartBtn');
+        if (restartBtn) {
+            restartBtn.addEventListener('click', () => this.restart());
+        }
+        
+        // 手机方向按钮
+        this.bindMobileControls();
+    }
+    
+    bindMobileControls() {
+        const btnUp = document.getElementById('btnUp');
+        const btnDown = document.getElementById('btnDown');
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        
+        // 防止触摸延迟和缩放
+        const preventDefault = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        
+        if (btnUp) {
+            btnUp.addEventListener('touchstart', (e) => {
+                preventDefault(e);
+                this.changeDirection(0, -1);
+            }, { passive: false });
+            btnUp.addEventListener('click', preventDefault);
+        }
+        
+        if (btnDown) {
+            btnDown.addEventListener('touchstart', (e) => {
+                preventDefault(e);
+                this.changeDirection(0, 1);
+            }, { passive: false });
+            btnDown.addEventListener('click', preventDefault);
+        }
+        
+        if (btnLeft) {
+            btnLeft.addEventListener('touchstart', (e) => {
+                preventDefault(e);
+                this.changeDirection(-1, 0);
+            }, { passive: false });
+            btnLeft.addEventListener('click', preventDefault);
+        }
+        
+        if (btnRight) {
+            btnRight.addEventListener('touchstart', (e) => {
+                preventDefault(e);
+                this.changeDirection(1, 0);
+            }, { passive: false });
+            btnRight.addEventListener('click', preventDefault);
+        }
+    }
+    
+    // 统一的转向方法
+    changeDirection(x, y) {
+        if (!this.gameRunning || this.gamePaused) return;
+        
+        const currentDir = this.direction;
+        if (x !== 0 && currentDir.x === -x) return;
+        if (y !== 0 && currentDir.y === -y) return;
+        
+        this.nextDirection = { x, y };
     }
     
     handleKeyPress(e) {
@@ -90,42 +157,33 @@ class SnakeGame {
         // 方向控制
         if (!this.gameRunning || this.gamePaused) return;
         
-        const currentDir = this.direction;
         let newDir = null;
         
         switch (key) {
             case 'ArrowUp':
             case 'w':
             case 'W':
-                if (currentDir.y !== 1) {
-                    newDir = { x: 0, y: -1 };
-                }
+                newDir = { x: 0, y: -1 };
                 break;
             case 'ArrowDown':
             case 's':
             case 'S':
-                if (currentDir.y !== -1) {
-                    newDir = { x: 0, y: 1 };
-                }
+                newDir = { x: 0, y: 1 };
                 break;
             case 'ArrowLeft':
             case 'a':
             case 'A':
-                if (currentDir.x !== 1) {
-                    newDir = { x: -1, y: 0 };
-                }
+                newDir = { x: -1, y: 0 };
                 break;
             case 'ArrowRight':
             case 'd':
             case 'D':
-                if (currentDir.x !== -1) {
-                    newDir = { x: 1, y: 0 };
-                }
+                newDir = { x: 1, y: 0 };
                 break;
         }
         
         if (newDir) {
-            this.nextDirection = newDir;
+            this.changeDirection(newDir.x, newDir.y);
         }
     }
     
@@ -138,24 +196,48 @@ class SnakeGame {
     }
     
     start() {
-        if (!this.gameRunning) {
+        // 如果游戏已结束，重新初始化
+        if (this.score > 0 && !this.gameRunning) {
             this.init();
-            this.gameRunning = true;
-            this.gamePaused = false;
-            this.gameLoop = setInterval(() => this.update(), this.speed);
-            document.getElementById('startBtn').textContent = '暂停';
+        }
+        
+        this.gameRunning = true;
+        this.gamePaused = false;
+        this.gameLoop = setInterval(() => this.update(), this.speed);
+        this.updateStartButton();
+    }
+    
+    updateStartButton() {
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            if (!this.gameRunning) {
+                startBtn.textContent = '开始游戏';
+            } else if (this.gamePaused) {
+                startBtn.textContent = '继续';
+            } else {
+                startBtn.textContent = '暂停';
+            }
         }
     }
     
     togglePause() {
         this.gamePaused = !this.gamePaused;
-        document.getElementById('startBtn').textContent = this.gamePaused ? '继续' : '暂停';
+        this.updateStartButton();
     }
     
     restart() {
+        // 隐藏游戏结束弹窗
+        const gameOverEl = document.getElementById('gameOver');
+        if (gameOverEl) {
+            gameOverEl.style.display = 'none';
+        }
+        
         this.stop();
         this.init();
         this.draw();
+        
+        // 自动开始游戏
+        this.start();
     }
     
     stop() {
@@ -165,7 +247,7 @@ class SnakeGame {
             clearInterval(this.gameLoop);
             this.gameLoop = null;
         }
-        document.getElementById('startBtn').textContent = '开始游戏';
+        this.updateStartButton();
     }
     
     update() {
@@ -221,7 +303,8 @@ class SnakeGame {
     placeFood() {
         // 随机放置食物，确保不在蛇身上
         let valid = false;
-        while (!valid) {
+        let attempts = 0;
+        while (!valid && attempts < 100) {
             this.food = {
                 x: Math.floor(Math.random() * this.tileCount),
                 y: Math.floor(Math.random() * this.tileCount)
@@ -234,6 +317,7 @@ class SnakeGame {
                     break;
                 }
             }
+            attempts++;
         }
     }
     
@@ -379,8 +463,11 @@ class SnakeGame {
     }
     
     updateUI() {
-        document.getElementById('score').textContent = this.score;
-        document.getElementById('highScore').textContent = this.highScore;
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('highScore');
+        
+        if (scoreEl) scoreEl.textContent = this.score;
+        if (highScoreEl) highScoreEl.textContent = this.highScore;
     }
     
     gameOver() {
@@ -393,9 +480,13 @@ class SnakeGame {
         }
         
         // 显示游戏结束界面
-        document.getElementById('finalScore').textContent = this.score;
-        document.getElementById('gameOverHighScore').textContent = this.highScore;
-        document.getElementById('gameOver').style.display = 'block';
+        const finalScoreEl = document.getElementById('finalScore');
+        const gameOverHighScoreEl = document.getElementById('gameOverHighScore');
+        const gameOverEl = document.getElementById('gameOver');
+        
+        if (finalScoreEl) finalScoreEl.textContent = this.score;
+        if (gameOverHighScoreEl) gameOverHighScoreEl.textContent = this.highScore;
+        if (gameOverEl) gameOverEl.style.display = 'block';
     }
 }
 
