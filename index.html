@@ -121,30 +121,31 @@
         .control-row {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         .control-btn {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
-            border: 2px solid #00ff88;
-            border-radius: 12px;
+            border: 3px solid #00ff88;
+            border-radius: 15px;
             color: #00ff88;
-            font-size: 24px;
+            font-size: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 255, 136, 0.2);
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
         }
 
         .control-btn:active {
             background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
             color: #1a1a2e;
             transform: scale(0.9);
+            box-shadow: 0 2px 10px rgba(0, 255, 136, 0.5);
         }
 
         .control-btn.placeholder {
@@ -242,9 +243,14 @@
             }
 
             .control-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
+                width: 65px;
+                height: 65px;
+                font-size: 28px;
+            }
+            
+            .control-row {
+                gap: 10px;
+                margin-bottom: 10px;
             }
         }
     </style>
