@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇 - Snake Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            background: rgba(22, 33, 62, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
+            border: 2px solid #00ff88;
+        }
+
+        h1 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            font-size: 2.5em;
+        }
+
+        #gameCanvas {
+            background: #0f0f23;
+            border: 3px solid #00ff88;
+            border-radius: 5px;
+            box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.1);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            color: #fff;
+            font-size: 1.2em;
+        }
+
+        .game-info span {
+            padding: 10px 20px;
+            background: #0f3460;
+            border-radius: 8px;
+            border: 2px solid #00ff88;
+            min-width: 120px;
+        }
+
+        .game-info strong {
+            color: #00ff88;
+            font-size: 1.3em;
+        }
+
+        .controls {
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .controls kbd {
+            background: #333;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin: 0 5px;
+            border: 1px solid #555;
+            color: #00ff88;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: #fff;
+            padding: 50px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #ff6b6b;
+            display: none;
+            z-index: 100;
+        }
+
+        .game-over h2 {
+            color: #ff6b6b;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .game-over p {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .game-over .btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .high-score {
+            margin-top: 15px;
+            color: #ffd93d;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🐍 贪吃蛇</h1>
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+        <div class="game-info">
+            <span>得分: <strong id="score">0</strong></span>
+            <span>最高分: <strong id="highScore">0</strong></span>
+        </div>
+        <div class="controls">
+            <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> 移动 |
+            <kbd>空格</kbd> 暂停 |
+            <kbd>R</kbd> 重新开始
+        </div>
+        <button class="btn" id="startBtn">开始游戏</button>
+        <div class="high-score">💡 提示：吃到食物增加长度，撞墙或撞到自己游戏结束</div>
+    </div>
+
+    <div class="game-over" id="gameOver">
+        <h2>游戏结束</h2>
+        <p>最终得分: <strong id="finalScore">0</strong></p>
+        <p class="high-score">🏆 历史最高: <strong id="gameOverHighScore">0</strong></p>
+        <button class="btn" id="restartBtn">再玩一次</button>
+    </div>
+
+    <script src="snake.js"></script>
+</body>
+</html>
